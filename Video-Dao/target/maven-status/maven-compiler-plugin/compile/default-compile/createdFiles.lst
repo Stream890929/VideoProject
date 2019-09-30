@@ -1,0 +1,6 @@
+com\qfedu\mapper\VideoMapper.class
+com\qfedu\mapper\UserMapper.class
+com\qfedu\mapper\SubjectMapper.class
+com\qfedu\mapper\CourseMapper.class
+com\qfedu\mapper\AdminMapper.class
+com\qfedu\mapper\SpeakerMapper.class

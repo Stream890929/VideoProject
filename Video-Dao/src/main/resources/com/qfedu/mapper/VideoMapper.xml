@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.qfedu.mapper.VideoMapper">
+
+    <resultMap id="videoMap" type="com.qfedu.entity.Video">
+        <id property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="detail" column="detail"/>
+        <result property="time" column="time"/>
+        <result property="videoUrl" column="video_url"/>
+        <result property="videoImageUrl" column="image_url"/>
+        <result property="playNum" column="play_num"/>
+
+        <result property="speakerId" column="speaker_id"/>
+        <result property="courseId" column="course_id"/>
+        <association property="speaker" javaType="com.qfedu.entity.Speaker">
+            <id property="id" column="sid"/>
+            <result property="speakerName" column="speaker_name"/>
+            <result property="speakerDesc" column="speaker_desc"/>
+            <result property="headImgUrl" column="head_img_url"/>
+        </association>
+
+        <association property="course" javaType="com.qfedu.entity.Course">
+            <id property="id" column="cid"/>
+            <result property="courseTitle" column="course_title"/>
+        </association>
+    </resultMap>
+
+    <!--where 标签的作用是自动加上where 并且可以将第一个的and去掉-->
+    <sql id="listWhere">
+        <where>
+            <if test="title != null and title != '' ">
+                and title like concat('%',#{title},'%')
+            </if>
+            <if test="speakerId != 0">
+                and speaker_id = #{speakerId}
+            </if>
+            <if test="courseId != 0">
+                and course_id = #{courseId}
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectVideoAll" resultType="com.qfedu.entity.Video">
+        select * from video
+    </select>
+
+    <select id="selectVideoByQueryVo" parameterType="com.qfedu.entity.VideoQueryVo" resultMap="videoMap">
+        select v.*,s.id as sid,s.speaker_name,c.id AS cid,c.course_title from video as v
+            left join speaker as s on v.speaker_id = s.id LEFT JOIN course as c on v.course_id = c.id
+        <include refid="listWhere"></include>
+        limit #{begin},#{rows}
+    </select>
+
+    <select id="getVideoCount" parameterType="com.qfedu.entity.VideoQueryVo" resultType="int">
+        select count(1) from video v left join speaker s on v.speaker_id = s.id
+        <include refid="listWhere"></include>
+    </select>
+
+    <select id="getVideoById" parameterType="int" resultMap="videoMap">
+        select v.*,s.id sid,s.speaker_name,s.speaker_desc,s.head_img_url from video v
+            left join speaker s on v.speaker_id = s.id where v.id = #{id}
+    </select>
+
+    <insert id="saveVideo" parameterType="com.qfedu.entity.Video">
+        <selectKey keyProperty="id" keyColumn="id" resultType="int" order="AFTER">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into video(title,detail,time,speaker_id,course_id,video_url,image_url,play_num) values (#{title},#{detail},#{time},#{speakerId},#{courseId},#{videoUrl},#{videoImageUrl},#{playNum})
+    </insert>
+
+    <update id="updateVideoById" parameterType="com.qfedu.entity.Video" >
+        update video set title =#{title},detail =#{detail},time=#{time},speaker_id =#{speakerId},Course_id =#{courseId},video_url=#{videoUrl},image_url=#{videoImageUrl} where id = #{id}
+    </update>
+
+    <delete id="deleteVideosByIds" parameterType="com.qfedu.entity.VideoQueryVo">
+        delete from video where id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <delete id="deleteVideoById" parameterType="int">
+        delete from video where id = ${value}
+    </delete>
+
+    <select id="getVideoListByCourseId" parameterType="int" resultMap="videoMap">
+        select v.*,s.id sid,s.speaker_name from video v left join speaker s on v.speaker_id=s.id  where course_id=#{courseId}
+    </select>
+
+    <update id="updateVideoPlayNum" parameterType="com.qfedu.entity.VideoQueryVo">
+        update video set play_num=#{playNum} where id=#{id}
+    </update>
+
+</mapper>

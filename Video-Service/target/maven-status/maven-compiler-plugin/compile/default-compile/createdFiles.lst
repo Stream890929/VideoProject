@@ -1,0 +1,11 @@
+com\qfedu\service\VideoService.class
+com\qfedu\service\impl\CourseServiceImpl.class
+com\qfedu\service\AdminService.class
+com\qfedu\service\UserService.class
+com\qfedu\service\impl\UserServiceImpl.class
+com\qfedu\service\impl\VideoServiceImpl.class
+com\qfedu\service\SpeakerService.class
+com\qfedu\service\impl\AdminServiceImpl.class
+com\qfedu\service\SubjectService.class
+com\qfedu\service\impl\SubjectServiceImpl.class
+com\qfedu\service\CourseService.class

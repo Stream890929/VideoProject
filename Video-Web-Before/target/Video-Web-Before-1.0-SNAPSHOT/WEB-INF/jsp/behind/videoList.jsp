@@ -1,0 +1,248 @@
+<%@ page language="java" pageEncoding="UTF-8" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib prefix="p" uri="http://yanzhenwei.com/common/" %>
+<!-- 分页插件 -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <title>视频列表管理</title>
+
+    <!-- Bootstrap -->
+    <link href="${pageContext.request.contextPath}/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcss.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
+
+    <script src="${pageContext.request.contextPath}/js/jquery-1.12.4.min.js"></script>
+    <script src="${pageContext.request.contextPath}/js/bootstrap.min.js"></script>
+    <script src="${pageContext.request.contextPath}/js/confirm.js"></script>
+
+    <style type="text/css">
+        th {
+            text-align: center;
+        }
+    </style>
+    <script type="text/javascript">
+        function showAddPage() {
+            location.href = "${pageContext.request.contextPath}/video/addVideo";
+        }
+
+        $(function () {
+            $("#btn").click(function () {
+                if (deleteNum > 0) {
+                    Confirm.show('溫馨提示', '您確定要刪除这' + deleteNum + '条记录嗎？', {
+                        'Delete': {
+                            'primary': true,
+                            'callback': function () {
+                                //不是ajax，模拟提交
+                                $("#form2").submit();
+                                //如果是一个正常表单的提交，按钮必须是type=submit,并且必须在form表单里面
+                            }
+                        }
+                    });
+                } else {
+                    alert("您暂未选择任何数据，请选择您要删除的数据！");
+                }
+            });
+        });
+
+        function deleteVideoById(obj, id, name) {
+            Confirm.show('溫馨提示', '您確定要刪除' + name + '嗎？', {
+                'Delete': {
+                    'primary': true,
+                    'callback': function () {
+                        //此处需要调用ajax
+                        var params = {
+                            "id": id
+                        };
+                        $.post("${pageContext.request.contextPath}/video/deleteVideo", params, function (data) {
+                            if (data == 'success') {
+                                Confirm.show('处理结果', '恭喜您删除成功');
+                                //请用js删除掉那条记录
+                                $(obj).parent().parent().remove();
+                            } else {
+                                Confirm.show('处理结果', '操作失败');
+                            }
+                        });
+                    }
+                }
+            });
+            //阻止事件默认行为   a  href  onclick
+            //先执行onclick  后跳转
+            return false;
+        }
+
+        var deleteNum = 0;
+
+        function selectAll(obj) {
+            //dom  jquery
+            var value = obj.checked;
+            var arr = document.getElementsByName("ids");
+            for (var i = 0; i < arr.length; i++) {
+                arr[i].checked = value;
+            }
+            if (value) {
+                deleteNum = arr.length;
+            } else {
+                deleteNum = 0;
+            }
+            $("#delNum").text(deleteNum);
+        }
+
+        function selectOne(obj) {
+            if (obj.checked) {
+                deleteNum += 1;
+            } else {
+                deleteNum -= 1;
+            }
+
+            if (deleteNum == 0) {
+                document.getElementById("checkAllId").checked = false;
+            }
+
+            var arr = document.getElementsByName("ids");
+            if (deleteNum == arr.length) {
+                document.getElementById("checkAllId").checked = true;
+            }
+            $("#delNum").text(deleteNum);
+        }
+
+        //解决选择下拉框内容到输入框内容的问题
+        function showName(obj, id, type) {
+            var name = $(obj).text();
+
+            if (type == 1) {
+                $("#speakerName").html(name + "<span class='caret'></span>");
+                $("#speakerId").val(id);
+            } else {
+                $("#courseName").html(name + "<span class='caret'></span>");
+                $("#courseId").val(id);
+            }
+        }
+    </script>
+</head>
+
+<body>
+<nav class="navbar-inverse">
+    <div class="container">
+        <div class="navbar-header">
+            <a href="${pageContext.request.contextPath}/video/list" class="navbar-brand">视频管理系统</a>
+        </div>
+
+        <div id="bs-example-navbar-collapse-9" class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+                <li class="active"><a href="${pageContext.request.contextPath}/video/list">视频管理</a></li>
+                <li><a href="${pageContext.request.contextPath}/speaker/list">主讲人管理</a></li>
+                <li><a href="${pageContext.request.contextPath}/course/list">课程管理</a></li>
+            </ul>
+            <p class="navbar-text navbar-right">
+                <span style="margin-right: 10px;">${sessionScope.USERNAME}</span>
+                <i aria-hidden="true" class="glyphicon glyphicon-log-in"></i>&nbsp;&nbsp;
+                <a href="${pageContext.request.contextPath}/admin/logout" class="navbar-link">退出</a>
+            </p>
+        </div>
+    </div>
+</nav>
+
+<div class="jumbotron" style="padding-top: 15px;padding-bottom: 15px;">
+    <div class="container"><h2>视频管理</h2></div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-2">
+            <button type="button" onclick="showAddPage()" data-toggle="dropdown" aria-haspopup="true"
+                    aria-expanded="false" class="btn btn-info dropdown-toggle">添加
+            </button>
+
+            <button type="button" id="btn" class="btn btn-primary">批量删除<span id="delNum" class="badge">0</span></button>
+        </div>
+
+        <div class="col-md-4"></div>
+        <div class="col-md-6">
+            <!-- 查询相关组件 -->
+            <form action="${pageContext.request.contextPath}/video/list" method="post" class="navbar-form navbar-right">
+                <input type="text" name="title" class="form-control" placeholder="标题"/>
+                <div class="btn-group">
+                    <button type="button" id="speakerName" data-toggle="dropdown" aria-haspopup="true"
+                            aria-expanded="false" class="btn btn-primary dropdown-toggle">
+                        --请选择老师--<span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <c:forEach items="${speakerList}" var="speaker">
+                            <li value='${speaker.id}'>
+                                <a href="#" onclick="showName(this,'${speaker.id}',1)">${speaker.speakerName}</a>
+                            </li>
+                        </c:forEach>
+                    </ul>
+                    <input type="hidden" id="speakerId" name="speakerId" value="0"/>
+                </div>
+                <div class="btn-group">
+                    <button type="button" id="courseName" data-toggle="dropdown" aria-haspopup="true"
+                            aria-expanded="false" class="btn btn-primary dropdown-toggle">
+                        --请选择课程--<span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <c:forEach items="${courseList}" var="course">
+                            <li value="${course.id}">
+                                <a href="#" onclick="showName(this,${course.id},2)">${course.courseTitle}</a>
+                            </li>
+                        </c:forEach>
+                    </ul>
+                    <input type="hidden" id="courseId" name="courseId" value="0"/>
+                </div>
+                <button type="submit" class="btn btn-info dropdown-toggle">查询</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="container" style="margin-top: 20px;">
+    <form action="" id="form2" method="post">
+        <table class="table table-bordered table-hover" style="text-align: center;table-layout:fixed">
+            <thead>
+            <tr class="active">
+                <th style="width:3%"><input type="checkbox" id="checkAllId" onclick="selectAll(this)"/></th>
+                <th style="width:5%">序号</th>
+                <th style="width:15%">名称</th>
+                <th style="width:42%;">介绍</th>
+                <th>讲师</th>
+                <th>时长</th>
+                <th style="width:7%">播放次数</th>
+                <th>编辑</th>
+                <th>删除</th>
+            </tr>
+            </thead>
+            <tbody>
+            <c:forEach items="${page.rows}" var="video" varStatus="status">
+                <tr>
+                    <td><input type="checkbox" name="ids" onclick="selectOne(this)" value="${video.id}"/></td>
+                    <td>${status.count}</td>
+                    <td>${video.title}</td>
+                    <td style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${video.detail}</td>
+                    <td>${video.speaker.speakerName}</td>
+                    <td>${video.showTime}</td>
+                    <td>${video.playNum}</td>
+                    <td><a href="editVideo/${video.id}">
+                        <span aria-hidden="true" class="glyphicon glyphicon-edit"></span></a></td>
+                    <!-- js中如果使用el表达式，请用单引号包括，避免造成一些语法问题 -->
+                    <td><a href="#" onclick="return deleteVideoById(this,'${video.id}','${video.title}')">
+                        <span aria-hidden="true" class="glyphicon glyphicon-trash"></span></a></td>
+                </tr>
+            </c:forEach>
+            </tbody>
+        </table>
+    </form>
+</div>
+
+<div class="container">
+    <div class="navbar-right" style="padding-right: 17px">
+        <p:page url="${pageContext.request.contextPath}/video/list"/>
+    </div>
+</div>
+
+</body>
+</html>

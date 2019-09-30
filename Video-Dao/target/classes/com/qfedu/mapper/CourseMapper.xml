@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.qfedu.mapper.CourseMapper">
+    <resultMap id="courseMap" type="com.qfedu.entity.Course">
+        <id property="id" column="id"/>
+        <result property="courseTitle" column="course_title"/>
+        <result property="courseDesc" column="course_desc"/>
+        <result property="subjectId" column="subject_id"/>
+        <result property="subjectName" column="subject_name"/>
+        <association property="subject" javaType="com.qfedu.entity.Subject">
+            <id property="id" column="sid"/>
+            <result property="subjectName" column="subject_name"/>
+        </association>
+    </resultMap>
+
+    <select id="selectAllCourse" parameterType="com.qfedu.entity.Course" resultMap="courseMap">
+        select c.* from course c
+    </select>
+
+    <select id="selectCourseList" resultMap="courseMap">
+        select c.*,s.id as sid,s.subject_name from course c,subject s where c.subject_id = s.id
+    </select>
+
+    <select id="getCourseById" parameterType="int" resultMap="courseMap">
+        select * from course where id = #{id}
+    </select>
+
+    <insert id="saveCourse" parameterType="com.qfedu.entity.Course">
+        <selectKey keyProperty="id" keyColumn="id" resultType="int" order="AFTER">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into course (course_title,course_desc,subject_id) values (#{courseTitle},#{courseDesc},#{subjectId});
+    </insert>
+
+    <update id="updateCourseById" parameterType="com.qfedu.entity.Course" >
+        update course set course_title=#{courseTitle},course_desc=#{courseDesc},subject_id=#{subjectId} where id = #{id}
+    </update>
+
+    <delete id="deleteCourseById" parameterType="int">
+        delete from course where id = #{id}
+    </delete>
+
+    <select id="selectCourseBySubjectId" parameterType="int" resultMap="courseMap">
+        select * from course where subject_id = #{subjectId}
+    </select>
+
+</mapper>

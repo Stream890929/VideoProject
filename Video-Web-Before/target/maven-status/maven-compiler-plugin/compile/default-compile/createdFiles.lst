@@ -1,0 +1,8 @@
+com\qfedu\controller\CourseController.class
+com\qfedu\controller\BeforeVideoController.class
+com\qfedu\controller\SpeakerController.class
+com\qfedu\exception\MyExceptionHandler.class
+com\qfedu\interceptor\LoginInterceptor.class
+com\qfedu\controller\AdminController.class
+com\qfedu\controller\UserController.class
+com\qfedu\controller\VideoController.class
